@@ -22,6 +22,8 @@
 .env.development.local
 .env.test.local
 .env.production.local
+cookies*.txt
+cookies_*.txt
 
 # Logs
 npm-debug.log*
