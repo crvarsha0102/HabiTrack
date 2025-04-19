@@ -1,17 +1,59 @@
 # Real Estate Marketplace
 
-A full-stack real estate marketplace application built with Angular for the frontend and Spring Boot for the backend. This platform allows users to browse, search, and manage property listings with a modern, responsive user interface.
-
-
+A full-stack real estate marketplace application built with Angular for the frontend and Spring Boot for the backend. This platform provides a comprehensive solution for real estate property management.
 
 ## Features
 
-- **User Authentication**: Secure login and registration with JWT
-- **Property Management**: Add, edit, and delete property listings
-- **Property Search**: Advanced filtering and search functionality
-- **Image Management**: Upload and display multiple property images
-- **User Profiles**: View and manage user information
-- **Responsive Design**: Optimized for all device sizes
+- **User Authentication & Authorization**
+  - Secure login and registration
+  - JWT-based authentication
+  - Role-based access control
+  - Password encryption
+
+- **Property Management**
+  - Add, edit, and delete property listings
+  - Support for multiple property types (apartment, house, land, commercial)
+  - Property status management (active, inactive, sold, rented)
+  - Multiple image uploads with carousel display
+
+- **Advanced Search & Filtering**
+  - Search by location, price range, property type, and amenities
+  - Filter by furnished status, parking availability, and more
+  - Sort by price, date added, property size
+  - Keyword-based search
+
+- **User Dashboard**
+  - User profile management
+  - Property listing management
+  - Saved properties and favorites
+
+- **Meeting Scheduling**
+  - Schedule property viewings or consultations
+  - Meeting status tracking (pending, accepted, declined, cancelled, completed)
+  - Meeting reminder notifications
+  - Virtual and in-person meeting options
+
+- **Messaging System**
+  - Direct communication between users
+  - Property-related messaging
+  - Message history and thread management
+  - Notification system for new messages
+
+- **Property Details**
+  - Comprehensive property information display
+  - Image gallery with carousel
+  - Property features and amenities listing
+  - Contact owner functionality
+
+- **Responsive Design**
+  - Mobile-first approach
+  - Optimized for all device sizes
+  - Tailored user experience for different screen sizes
+
+- **Performance Optimization**
+  - Server-side rendering for improved SEO
+  - Lazy loading of components and images
+  - Data pagination for efficient loading
 
 ## Project Structure
 
@@ -124,23 +166,57 @@ real-estate-backend/
    mvn spring-boot:run
    ```
 
-4. The API will be available at `http://localhost:8080/api`
+4. The API will be available at `http://localhost:8081/api`
 
-## Available Pages
+## Application Pages
 
-- **Home** - Main landing page with featured properties
-- **Search** - Advanced property search with filters
-- **Property Details** - Detailed information about a specific property
-- **Profile** - User profile and property management
-- **Login/Register** - User authentication
-- **Add Property** - Form to create new property listings
-- **Edit Property** - Form to update existing property listings
+- **Home** - Main landing page featuring:
+  - Hero section with property search
+  - Featured property listings
+  - Call-to-action sections
+  - Category browsing
+
+- **Search** - Advanced property search with:
+  - Multiple filter options
+  - Interactive sorting
+  - Grid and list view options
+  - Paginated results
+
+- **Property Details** - Comprehensive property information:
+  - Image gallery carousel
+  - Detailed property specifications
+  - Amenities and features
+  - Owner contact information
+  - Similar properties
+
+- **User Profile** - Personalized user dashboard:
+  - Profile information management
+  - Property listing management
+  - Saved favorites
+  - Message center
+
+- **Authentication Pages** - User access management:
+  - Login with credential validation
+  - Registration with form validation
+  - Password recovery
+
+- **Property Forms** - Property management:
+  - Add property with multiple sections
+  - Edit property details
+  - Multi-image upload interface
+
+- **Messaging** - User communication:
+  - Message inbox and sent messages
+  - Reply functionality
+  - Meeting scheduling
+  - Message filtering and search
 
 ## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
+- `POST /api/auth/refresh` - Refresh authentication token
 
 ### Properties
 - `GET /api/properties` - Get all properties with optional filters
@@ -148,18 +224,33 @@ real-estate-backend/
 - `POST /api/properties` - Create a new property
 - `PUT /api/properties/{id}` - Update an existing property
 - `DELETE /api/properties/{id}` - Delete a property
+- `POST /api/properties/{id}/images` - Upload images for a property
+- `PUT /api/properties/status/{id}` - Update property status
 
 ### Users
 - `GET /api/users/{id}` - Get user profile
 - `PUT /api/users/{id}` - Update user profile
+- `GET /api/users/{id}/properties` - Get properties for a user
+- `POST /api/users/{id}/favorites` - Add property to favorites
+
+### Messaging
+- `POST /api/messages/send` - Send a message
+- `GET /api/messages/received` - Get received messages
+- `GET /api/messages/sent` - Get sent messages
+- `PUT /api/messages/{id}/read` - Mark message as read
+
+### Meetings
+- `POST /api/meetings` - Create a meeting
+- `GET /api/meetings/user/{id}` - Get user's meetings
+- `PUT /api/meetings/{id}/status` - Update meeting status
 
 ## Deployment
 
 ### Frontend
-The frontend is deployed on Vercel for optimal performance and global availability.
+The frontend is built for production using Angular CLI and can be deployed to any static hosting service.
 
 ### Backend
-The backend can be deployed as a containerized application using the provided Dockerfile or on any Java-compatible hosting service.
+The backend is packaged as a Java application and can be deployed using Docker or traditional Java deployment methods.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
