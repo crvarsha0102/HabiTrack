@@ -2,9 +2,7 @@
 
 A full-stack real estate marketplace application built with Angular for the frontend and Spring Boot for the backend. This platform allows users to browse, search, and manage property listings with a modern, responsive user interface.
 
-## Live Demo
 
-The application is deployed and accessible at [https://real-estate-marketplace-pi.vercel.app/](https://real-estate-marketplace-pi.vercel.app/)
 
 ## Features
 
