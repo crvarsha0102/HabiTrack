@@ -56,3 +56,4 @@ temp/
 
 # System files
 Thumbs.db
+real-estate-backend/src/main/resources/serviceAccountKey.json
