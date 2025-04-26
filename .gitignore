@@ -39,3 +39,20 @@ logs
 
 # Angular specific
 .angular/ 
+
+# More environment files
+.env
+.env.*
+
+# NPM cache
+.npm/
+
+# Yarn cache
+.yarn/
+
+# Temporary files
+tmp/
+temp/
+
+# System files
+Thumbs.db
