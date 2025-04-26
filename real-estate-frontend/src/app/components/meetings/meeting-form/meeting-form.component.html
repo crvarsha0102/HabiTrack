@@ -1,0 +1,96 @@
+<div class="meeting-form">
+  <h2 class="mb-4">Schedule a Meeting</h2>
+  
+  <div *ngIf="!participant" class="alert alert-warning">
+    Please select a participant to schedule a meeting.
+  </div>
+  
+  <form [formGroup]="meetingForm" (ngSubmit)="onSubmit()" *ngIf="participant">
+    <div class="mb-3">
+      <label for="meetingTitle" class="form-label">Meeting Title*</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="meetingTitle" 
+        formControlName="title" 
+        placeholder="e.g., Property Viewing"
+      >
+      <div *ngIf="meetingForm.get('title')?.invalid && meetingForm.get('title')?.touched" class="text-danger">
+        Title is required and must be less than 100 characters.
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label for="meetingDescription" class="form-label">Description</label>
+      <textarea 
+        class="form-control" 
+        id="meetingDescription" 
+        formControlName="description" 
+        rows="3" 
+        placeholder="Additional details about the meeting"
+      ></textarea>
+      <div *ngIf="meetingForm.get('description')?.invalid && meetingForm.get('description')?.touched" class="text-danger">
+        Description must be less than 1000 characters.
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label for="meetingTime" class="form-label">Meeting Time*</label>
+      <input 
+        type="datetime-local" 
+        class="form-control" 
+        id="meetingTime" 
+        formControlName="meetingTime"
+        [min]="minDate"
+      >
+      <div *ngIf="meetingForm.get('meetingTime')?.invalid && meetingForm.get('meetingTime')?.touched" class="text-danger">
+        Please select a valid future date and time.
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label for="meetingDuration" class="form-label">Duration (minutes)*</label>
+      <input 
+        type="number" 
+        class="form-control" 
+        id="meetingDuration" 
+        formControlName="durationMinutes"
+        min="5"
+        max="480"
+      >
+      <div *ngIf="meetingForm.get('durationMinutes')?.invalid && meetingForm.get('durationMinutes')?.touched" class="text-danger">
+        Duration must be between 5 and 480 minutes.
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label for="meetingLocation" class="form-label">Location</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="meetingLocation" 
+        formControlName="location" 
+        placeholder="e.g., 123 Main St, or leave blank for virtual meetings"
+      >
+    </div>
+    
+    <div class="mb-3">
+      <label for="meetingLink" class="form-label">Meeting Link</label>
+      <input 
+        type="url" 
+        class="form-control" 
+        id="meetingLink" 
+        formControlName="meetingLink" 
+        placeholder="e.g., https://zoom.us/j/123456789"
+      >
+      <div *ngIf="meetingForm.get('meetingLink')?.invalid && meetingForm.get('meetingLink')?.touched" class="text-danger">
+        Please enter a valid URL.
+      </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mt-4">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="meetingForm.invalid">Schedule Meeting</button>
+    </div>
+  </form>
+</div> 

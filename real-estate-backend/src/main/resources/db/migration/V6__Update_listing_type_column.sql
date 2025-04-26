@@ -1,0 +1,1 @@
+-- Update the listing_type column to remove default constraint\nALTER TABLE listings MODIFY COLUMN listing_type VARCHAR(255) NOT NULL;

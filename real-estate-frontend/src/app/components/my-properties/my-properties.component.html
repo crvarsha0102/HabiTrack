@@ -1,0 +1,116 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">My Properties</h1>
+      <a routerLink="/add-property" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors">
+        Add New Property
+      </a>
+    </div>
+
+    <div *ngIf="loading" class="flex justify-center py-8">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+
+    <div *ngIf="!loading && properties.length === 0" class="text-center py-8">
+      <p class="text-gray-500 text-lg mb-4">You haven't listed any properties yet.</p>
+      <a routerLink="/add-property" class="px-6 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors">
+        List Your First Property
+      </a>
+    </div>
+
+    <div *ngIf="!loading && properties.length > 0" class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-50">
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let property of properties">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="h-10 w-10 flex-shrink-0">
+                  <img [src]="property.images && property.images.length > 0 ? property.images[0] : 'assets/images/prpty.jpg'" 
+                       alt="Property" class="h-10 w-10 rounded-md object-cover">
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{ property.title }}</div>
+                  <div class="text-sm text-gray-500">{{ property.location || property.address }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                {{ property.listingType }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="'px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' + 
+                (property.status === PropertyStatus.ACTIVE ? 'bg-green-100 text-green-800' : 
+                 property.status === PropertyStatus.INACTIVE ? 'bg-gray-100 text-gray-800' :
+                 property.status === PropertyStatus.SOLD ? 'bg-red-100 text-red-800' :
+                 'bg-yellow-100 text-yellow-800')">
+                {{ property.status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              ${{ property.price | number }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <div class="flex space-x-2">
+                <a [routerLink]="['/property-overview', property.id]" class="text-primary-600 hover:text-primary-900">View</a>
+                <button 
+                  *ngIf="property.status === PropertyStatus.ACTIVE"
+                  (click)="updatePropertyStatus(property.id!, PropertyStatus.INACTIVE)"
+                  class="text-yellow-600 hover:text-yellow-900">
+                  Deactivate
+                </button>
+                <button 
+                  *ngIf="property.status === PropertyStatus.INACTIVE"
+                  (click)="updatePropertyStatus(property.id!, PropertyStatus.ACTIVE)"
+                  class="text-green-600 hover:text-green-900">
+                  Activate
+                </button>
+                <button 
+                  *ngIf="property.status === PropertyStatus.ACTIVE"
+                  (click)="updatePropertyStatus(property.id!, PropertyStatus.SOLD)"
+                  class="text-red-600 hover:text-red-900">
+                  Mark as Sold
+                </button>
+                <button 
+                  *ngIf="property.status === PropertyStatus.ACTIVE"
+                  (click)="updatePropertyStatus(property.id!, PropertyStatus.RENTED)"
+                  class="text-purple-600 hover:text-purple-900">
+                  Mark as Rented
+                </button>
+                <button 
+                  (click)="deleteProperty(property.id!)"
+                  class="text-red-600 hover:text-red-900">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="flex justify-center mt-6 space-x-2">
+      <button 
+        *ngFor="let page of [].constructor(totalPages); let i = index"
+        (click)="onPageChange(i)"
+        [class.bg-primary-600]="currentPage === i"
+        [class.text-white]="currentPage === i"
+        [class.bg-gray-100]="currentPage !== i"
+        [class.text-gray-700]="currentPage !== i"
+        class="px-4 py-2 rounded-md hover:bg-primary-700 hover:text-white transition-colors">
+        {{ i + 1 }}
+      </button>
+    </div>
+  </div>
+</div> 

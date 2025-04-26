@@ -1,0 +1,23 @@
+<div class="modal-header">
+  <h4 class="modal-title">Schedule a Meeting</h4>
+  <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
+</div>
+
+<div class="modal-body">
+  <div *ngIf="loading" class="text-center p-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Scheduling meeting...</p>
+  </div>
+  
+  <app-meeting-form 
+    *ngIf="!loading"
+    [participant]="otherUser"
+    [propertyId]="propertyId"
+    [propertyName]="propertyTitle"
+    [messageId]="messageId"
+    (submit)="onMeetingFormSubmitted($event)"
+    (cancel)="closeModal()"
+  ></app-meeting-form>
+</div> 

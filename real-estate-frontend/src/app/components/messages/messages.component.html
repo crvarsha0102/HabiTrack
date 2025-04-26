@@ -1,0 +1,319 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2">Messages</h1>
+  </div>
+  
+  <!-- Server-side rendering indicator (only visible during development) -->
+  <div *ngIf="!isBrowser" class="alert alert-info">
+    This component is being server-side rendered.
+    Data loading will be performed client-side after hydration.
+  </div>
+  
+  <!-- Initial loading state when hydrating -->
+  <div *ngIf="isBrowser && (!messages || messages.length === 0) && !error && loading" class="text-center my-5 py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading messages...</p>
+  </div>
+  
+  <!-- Only show main content when in browser context or when hydration is complete -->
+  <ng-container *ngIf="isBrowser">
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4">
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="activeTab === 'inbox'" 
+           (click)="switchTab('inbox')" href="javascript:void(0)">Inbox</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="activeTab === 'sent'"
+           (click)="switchTab('sent')" href="javascript:void(0)">Sent</a>
+      </li>
+    </ul>
+    
+    <!-- Error message -->
+    <div *ngIf="error" class="alert alert-danger">
+      {{ error }}
+      <button class="btn btn-sm btn-outline-danger float-end" (click)="loadMessages()">
+        <i class="bi bi-arrow-clockwise"></i> Retry
+      </button>
+    </div>
+    
+    <!-- Loading state -->
+    <div *ngIf="loading && messages && messages.length === 0" class="d-flex justify-content-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    
+    <!-- No messages state -->
+    <div *ngIf="!loading && !error && messages && messages.length === 0" class="text-center my-5">
+      <p class="text-muted">No messages found.</p>
+    </div>
+    
+    <!-- Messages list -->
+    <div *ngIf="!loading && messages && messages.length > 0" class="list-group mb-4">
+      <!-- Message cards -->
+      <div *ngFor="let message of messages" 
+           class="message-card mb-3" 
+           [class.unread]="!message.read && activeTab === 'inbox'"
+           (click)="markAsRead(message)">
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <!-- Property image (if available) -->
+              <div class="col-md-2" *ngIf="message.propertyId">
+                <div *ngIf="message.property" class="property-image-container">
+                  <img [src]="message.property.featuredImage" 
+                       class="img-fluid rounded" 
+                       alt="Property" 
+                       (click)="viewProperty(message.propertyId)">
+                </div>
+                <div *ngIf="!message.property" class="placeholder-image">
+                  <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Message content -->
+              <div [class]="message.propertyId ? 'col-md-10' : 'col-md-12'">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <!-- Show recipient or sender name based on the active tab -->
+                    <h5 class="card-title mb-1">
+                      {{ activeTab === 'inbox' ? (message.senderName || 'Unknown Sender') : 'To: ' + (message.recipientName || 'Property Owner') }}
+                    </h5>
+                    <small class="text-muted">{{ formatDate(message.createdAt) }}</small>
+                  </div>
+                  <div>
+                    <!-- Reply button (only for inbox) -->
+                    <button *ngIf="activeTab === 'inbox'" class="btn btn-sm btn-outline-primary me-2"
+                            (click)="openReplyModal(message, $event)"
+                            title="Reply to message">
+                      <i class="bi bi-reply"></i> Reply
+                    </button>
+                    <!-- Schedule Meeting button (only for inbox) -->
+                    <button *ngIf="activeTab === 'inbox'" class="btn btn-sm btn-outline-success me-2"
+                            (click)="openScheduleMeetingModal(message, $event)"
+                            title="Schedule a meeting">
+                      <i class="bi bi-calendar-plus"></i> Schedule Meeting
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" 
+                            (click)="deleteMessage(message.id, $event)" 
+                            title="Delete message">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Message subject and property info -->
+                <div *ngIf="message.propertyId" class="mb-2">
+                  <h6 class="mb-1">
+                    <span class="badge bg-info me-2">Property Inquiry</span>
+                    {{ message.propertyName || message.extractedPropertyTitle || (message.property ? message.property.title : '') || 'Property #' + message.propertyId }}
+                  </h6>
+                  <small>{{ message.property?.address || message.property?.city || 'Location not available' }}</small>
+                </div>
+                
+                <!-- Subject (don't show if it's "Untitled Property" or contains it) -->
+                <h6 *ngIf="message.subject && !message.subject.includes('Untitled Property')" class="mb-2">{{ message.betterSubject || message.subject }}</h6>
+                
+                <!-- Message text -->
+                <p class="card-text">{{ message.messageText || message.content }}</p>
+                
+                <!-- Associated meetings -->
+                <div *ngIf="message.meetings && message.meetings.length > 0" class="associated-meetings mt-3 mb-3">
+                  <h6 class="mb-2"><i class="bi bi-calendar-check"></i> Associated Meetings</h6>
+                  <div class="list-group">
+                    <div *ngFor="let meeting of message.meetings" class="list-group-item list-group-item-action">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <strong>{{ meeting.title }}</strong>
+                          <span class="ms-2 badge bg-{{ getMeetingStatusColor(meeting.status) }}">{{ getMeetingStatusLabel(meeting.status) }}</span>
+                          <p class="mb-1 small">{{ formatMeetingTime(meeting) }}</p>
+                        </div>
+                        <div>
+                          <button *ngIf="canAcceptMeeting(meeting)" class="btn btn-sm btn-success me-1" 
+                                 (click)="acceptMeeting(meeting.id, $event)">Accept</button>
+                          <button *ngIf="canDeclineMeeting(meeting)" class="btn btn-sm btn-danger me-1" 
+                                 (click)="declineMeeting(meeting.id, $event)">Decline</button>
+                          <button *ngIf="canCancelMeeting(meeting)" class="btn btn-sm btn-secondary me-1" 
+                                 (click)="cancelMeeting(meeting.id, $event)">Cancel</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Contact information -->
+                <div *ngIf="activeTab === 'inbox'" class="contact-info mt-3">
+                  <div *ngIf="message.senderEmail">
+                    <strong>Email:</strong> <a [href]="'mailto:' + message.senderEmail">{{ message.senderEmail }}</a>
+                  </div>
+                  <div *ngIf="message.senderPhone">
+                    <strong>Phone:</strong> <a [href]="'tel:' + message.senderPhone">{{ message.senderPhone }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- Reply Modal -->
+<div class="modal fade" id="replyModal" #replyModalElement tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="replyModalLabel">Reply to Message</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="replySuccess" class="alert alert-success">
+          Your reply has been sent successfully.
+        </div>
+        <div *ngIf="replyError" class="alert alert-danger">
+          {{ replyError }}
+        </div>
+        
+        <form *ngIf="!replySuccess && replyForm" [formGroup]="replyForm" (ngSubmit)="sendReply()">
+          <div class="mb-3">
+            <label for="replySubject" class="form-label">Subject</label>
+            <input type="text" class="form-control" id="replySubject" formControlName="subject" readonly>
+          </div>
+          
+          <!-- Property info (if available) -->
+          <div *ngIf="selectedMessage?.propertyId" class="mb-3 p-3 bg-light rounded">
+            <h6>Property: {{ selectedMessage?.propertyName || (selectedMessage?.property?.title || 'Property #' + selectedMessage?.propertyId) }}</h6>
+            <p class="text-muted mb-0">{{ selectedMessage?.property?.address || selectedMessage?.property?.city || 'Location not available' }}</p>
+          </div>
+          
+          <!-- Original message -->
+          <div class="mb-3">
+            <label class="form-label">Original Message:</label>
+            <div class="p-3 bg-light rounded">
+              {{ selectedMessage?.messageText || selectedMessage?.content }}
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="replyMessage" class="form-label">Your Reply</label>
+            <textarea class="form-control" id="replyMessage" rows="5" formControlName="message"></textarea>
+            <div *ngIf="replyForm.get('message')?.invalid && replyForm.get('message')?.touched" class="text-danger">
+              Message is required and must be at least 10 characters.
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" 
+                [disabled]="replyForm?.invalid || replySending" 
+                (click)="sendReply()">
+          <span *ngIf="replySending" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          {{ replySending ? 'Sending...' : 'Send Reply' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Meeting Modal -->
+<div class="modal fade" id="scheduleMeetingModal" #scheduleMeetingModalElement tabindex="-1" aria-labelledby="scheduleMeetingModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="scheduleMeetingModalLabel">Schedule a Meeting</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="meetingScheduling" class="text-center p-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Scheduling meeting...</p>
+        </div>
+        
+        <div *ngIf="meetingSuccess" class="alert alert-success">
+          Your meeting has been scheduled successfully.
+        </div>
+        
+        <div *ngIf="meetingError" class="alert alert-danger">
+          {{ meetingError }}
+        </div>
+        
+        <form *ngIf="!meetingSuccess && !meetingScheduling && meetingForm" [formGroup]="meetingForm" (ngSubmit)="scheduleMeeting()">
+          <!-- Context info about the meeting -->
+          <div *ngIf="selectedMessage" class="alert alert-info mb-3">
+            <div class="d-flex align-items-center mb-2">
+              <span class="badge bg-secondary me-2">Meeting with</span>
+              <strong>{{ activeTab === 'inbox' ? (selectedMessage.senderName || 'Unknown Sender') : (selectedMessage.recipientName || 'Unknown Recipient') }}</strong>
+            </div>
+            
+            <div *ngIf="selectedMessage.propertyId" class="mb-1">
+              <span class="badge bg-info me-2">Regarding Property</span>
+              {{ selectedMessage.propertyName || (selectedMessage.property ? selectedMessage.property.title : '') || ('Property #' + selectedMessage.propertyId) }}
+              <div class="small text-muted">{{ selectedMessage.property?.address || selectedMessage.property?.city || 'Location not available' }}</div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="meetingTitle" class="form-label">Meeting Title*</label>
+            <input type="text" class="form-control" id="meetingTitle" formControlName="title" placeholder="Enter a title for your meeting">
+            <div *ngIf="meetingForm.get('title')?.invalid && meetingForm.get('title')?.touched" class="text-danger">
+              Title is required.
+            </div>
+            <small class="form-text text-muted">Example: "Property viewing" or "Discussion about offer"</small>
+          </div>
+          
+          <div class="mb-3">
+            <label for="meetingDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="meetingDescription" rows="3" formControlName="description" placeholder="Add any details about the meeting"></textarea>
+          </div>
+          
+          <div class="mb-3">
+            <label for="meetingTime" class="form-label">Meeting Time*</label>
+            <input type="datetime-local" class="form-control" id="meetingTime" formControlName="meetingTime">
+            <div *ngIf="meetingForm.get('meetingTime')?.invalid && meetingForm.get('meetingTime')?.touched" class="text-danger">
+              Meeting time is required and must be in the future.
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="meetingDuration" class="form-label">Duration (minutes)*</label>
+            <input type="number" class="form-control" id="meetingDuration" formControlName="durationMinutes">
+            <div *ngIf="meetingForm.get('durationMinutes')?.invalid && meetingForm.get('durationMinutes')?.touched" class="text-danger">
+              Duration must be between 5 and 480 minutes.
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="meetingLocation" class="form-label">Location (optional)</label>
+            <input type="text" class="form-control" id="meetingLocation" formControlName="location" placeholder="Physical meeting location (if applicable)">
+          </div>
+          
+          <div class="mb-3">
+            <label for="meetingLink" class="form-label">Meeting Link (optional)</label>
+            <input type="text" class="form-control" id="meetingLink" formControlName="meetingLink" placeholder="Virtual meeting link (e.g., Zoom, Teams)">
+            <div *ngIf="meetingForm.get('meetingLink')?.invalid && meetingForm.get('meetingLink')?.touched" class="text-danger">
+              Please enter a valid URL.
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" 
+                [disabled]="meetingForm?.invalid || meetingScheduling" 
+                (click)="scheduleMeeting()">
+          <span *ngIf="meetingScheduling" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          {{ meetingScheduling ? 'Scheduling...' : 'Schedule Meeting' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div> 
