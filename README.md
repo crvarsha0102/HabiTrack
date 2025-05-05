@@ -7,6 +7,7 @@ A full-stack real estate marketplace application built with Angular for the fron
 <p align="center">
   <img src="Screenshot%202025-04-19%20162601.png" alt="Screenshot 1" width="300"/>
   <img src="Screenshot%202025-04-19%20162638.png" alt="Screenshot 2" width="300"/>
+  <img src="Screenshot%202025-04-19%20163416.png" alt="Screenshot 5" width="300"/>
   <br/>
   <img src="Screenshot%202025-04-19%20162817.png" alt="Screenshot 3" width="300"/>
   <img src="Screenshot%202025-04-19%20163232.png" alt="Screenshot 4" width="300"/>
